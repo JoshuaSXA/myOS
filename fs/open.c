@@ -28,7 +28,7 @@ PRIVATE struct inode * create_file(char * path, int flags);
 PRIVATE int alloc_imap_bit(int dev);
 PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc);
 PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect, int imode);
-PRIVATE void new_dir_entry(struct inode * dir_inode, int inode_nr, char * filename);
+PRIVATE void new_dir_entry(struct inode * dir_inode, struct inode * inode_nr, char * filename);
 
 /*****************************************************************************
  *                                do_open
@@ -172,9 +172,9 @@ PRIVATE struct inode * create_file(char * path, int flags)
                       NR_DEFAULT_FILE_SECTS);
     struct inode *newino = new_inode(dir_inode->i_dev, inode_nr,
                      free_sect_nr, I_REGULAR);
-
-    new_dir_entry(dir_inode, newino->i_num, filename);
-    //printl("%d %d %d %d %s\n", newino->i_dev, newino->i_mode, newino->i_start_sect, newino->i_size,filename);
+    newino->i_mode = I_REGULAR;
+    new_dir_entry(dir_inode, newino, filename);
+    //printl("%d %d %d %d %s\n", newino->i_dev, newino->i_mode, newino->i_start_sect, newino->i_size,filename
     return newino;
 }
 
@@ -201,8 +201,7 @@ PRIVATE struct inode * create_dir(char * path)
     struct inode *newino = new_inode(dir_inode->i_dev, inode_nr,
                      free_sect_nr, I_DIRECTORY);
 
-    new_dir_entry(dir_inode, newino->i_num, filename);
-
+    new_dir_entry(dir_inode, newino, filename);
     return newino;
 }
 
@@ -251,16 +250,45 @@ PUBLIC int do_ls()
     int m = 0;
 
     struct dir_entry * pde;
+    
     for (i = 0; i < nr_dir_blks; i++){
         //printl("%d %d\n", dir_inode->i_dev,nr_dir_blks);
         RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 
+        printl("type           name           inode_num\n");
+        printl("=======================================\n");
         pde = (struct dir_entry *)fsbuf;
         for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++, pde++){
             /*struct inode *n = find_inode(pde->inode_nr);*/
             if(strlen(pde->name) == 0){
                     //
-            }else{
+            }
+            
+            else{
+                //printl("         ");
+                if(pde->is_dir == 1){
+                    printl("directory");
+                    for(int l=strlen("directory"); l < 17; l++){
+                        printl(" ");
+                    }
+                }
+                else{
+                    printl("file");
+                    for(int l=strlen("file"); l < 17; l++){
+                        printl(" ");
+                    }
+                }
+                
+                printl("%s",pde->name);
+                for(int l = strlen(pde->name); l < 17; l++){
+                    printl(" ");
+                }
+
+                printl("%d",pde->inode_nr);
+                printl("\n");
+            }
+            /*
+            else{
                     printl("%s", pde->name);
                     for(int l=strlen(pde->name); l < 15; l++){
                         printl(" ");
@@ -271,11 +299,15 @@ PUBLIC int do_ls()
                     if (++m >= nr_dir_entries){
                         break;
                     }
-               }
+            }
+            */
+            
         }
+        /*
         if(m%4 != 0){
             printl("\n");
         }
+        */
         if (m > nr_dir_entries) //[> all entries have been iterated <]
             break;
     }
@@ -493,7 +525,7 @@ PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect, int imod
  * @param inode_nr   I-node nr of the new file.
  * @param filename   Filename of the new file.
  *****************************************************************************/
-PRIVATE void new_dir_entry(struct inode *dir_inode,int inode_nr,char *filename)
+PRIVATE void new_dir_entry(struct inode *dir_inode,struct inode* new_inode,char *filename)
 {
     /* write the dir_entry */
     int dir_blk0_nr = dir_inode->i_start_sect;
@@ -532,10 +564,15 @@ PRIVATE void new_dir_entry(struct inode *dir_inode,int inode_nr,char *filename)
         new_de = pde;
         dir_inode->i_size += DIR_ENTRY_SIZE;
     }
-
+    if (new_inode->i_mode == I_DIRECTORY){
+        new_de->is_dir = 1;
+    }
+    else{
+        new_de->is_dir = 0;
+    }
     //创建dir_entry
-    new_de->inode_nr = inode_nr;
-    strcpy(new_de->name, filename);
+    new_de->inode_nr = new_inode->i_num;
+    strcpy(new_de->name, filename); 
 
     /* write dir block -- ROOT dir block */
     WR_SECT(dir_inode->i_dev, dir_blk0_nr + i);
