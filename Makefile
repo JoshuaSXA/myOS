@@ -1,77 +1,181 @@
-CFLAGS=-nostdlib -nostdinc -fno-builtin -fno-stack-protector -m32
-ASFLAGS=--32
+#########################
+# Makefile for Orange'S #
+#########################
 
-OBJS=./src/boot.o ./src/common-s.o ./src/main.o ./src/common.o ./src/gdt-idt-s.o ./src/gdt-idt.o ./src/isr.o ./src/monitor.o ./src/timer.o ./src/kheap.o ./src/paging-s.o ./src/paging.o ./src/ordered-array.o ./src/fs.o ./src/initrd.o ./src/process.o ./src/task.o ./src/syscall.o ./src/syscall-s.o ./src/ds.o ./src/keyboard.o ./src/shell.o
- 
-all: $(OBJS)
-	ld -T ./src/link.ld -m elf_i386 -o ./src/kernel $(OBJS)
-./src/boot.o: ./src/boot.s
-	as -o ./src/boot.o ./src/boot.s $(ASFLAGS)
-./src/main.o: ./src/main.c
-	gcc -c ./src/main.c $(CFLAGS) -o ./src/main.o
-./src/common-s.o: ./src/common.s
-	as -o ./src/common-s.o ./src/common.s $(ASFLAGS)
-./src/common.o: ./src/common.c
-	gcc -c ./src/common.c $(CFLAGS) -o ./src/common.o
-./src/gdt-idt-s.o: ./src/gdt-idt.s
-	as -o ./src/gdt-idt-s.o ./src/gdt-idt.s $(ASFLAGS)
-./src/gdt-idt.o: ./src/gdt-idt.c
-	gcc -c ./src/gdt-idt.c $(CFLAGS) -o ./src/gdt-idt.o
-./src/isr.o: ./src/isr.c
-	gcc -c ./src/isr.c $(CFLAGS) -o ./src/isr.o
-./src/keyboard.o: ./src/keyboard.c
-	gcc -c ./src/keyboard.c $(CFLAGS) -o ./src/keyboard.o
-./src/monitor.o: ./src/monitor.c
-	gcc -c ./src/monitor.c $(CFLAGS) -o ./src/monitor.o
-./src/timer.o: ./src/timer.c
-	gcc -c ./src/timer.c $(CFLAGS) -o ./src/timer.o
-./src/kheap.o: ./src/kheap.c
-	gcc -c ./src/kheap.c $(CFLAGS) -o ./src/kheap.o
-./src/paging-s.o: ./src/paging.s
-	as -o ./src/paging-s.o ./src/paging.s $(ASFLAGS)
-./src/paging.o: ./src/paging.c
-	gcc -c ./src/paging.c $(CFLAGS) -o ./src/paging.o
-./src/ordered-array.o: ./src/ordered-array.c
-	gcc -c ./src/ordered-array.c $(CFLAGS) -o ./src/ordered-array.o
-./src/ds.o: ./src/ds.c
-	gcc -c ./src/ds.c $(CFLAGS) -o ./src/ds.o
-./src/fs.o: ./src/fs.c
-	gcc -c ./src/fs.c $(CFLAGS) -o ./src/fs.o
-./src/initrd.o: ./src/initrd.c
-	gcc -c ./src/initrd.c $(CFLAGS) -o ./src/initrd.o
-./src/process.o: ./src/process.s
-	as -o ./src/process.o ./src/process.s $(ASFLAGS)
-./src/task.o: ./src/task.c
-	gcc -c ./src/task.c $(CFLAGS) -o ./src/task.o
-./src/syscall.o: ./src/syscall.c
-	gcc -c ./src/syscall.c $(CFLAGS) -o ./src/syscall.o
-./src/syscall-s.o: ./src/syscall.s
-	as -o ./src/syscall-s.o ./src/syscall.s $(ASFLAGS)
-./src/shell.o: ./src/shell.c
-	gcc -c ./src/shell.c $(CFLAGS) -o ./src/shell.o
+# Entry point of Orange'S
+# It must have the same value with 'KernelEntryPointPhyAddr' in load.inc!
+ENTRYPOINT	= 0x1000
 
-clean:
-	rm ./src/*.o ./src/kernel 
+# Offset of entry point in kernel file
+# It depends on ENTRYPOINT
+ENTRYOFFSET	=   0x400
 
-clean-initrd:
-	rm ./initrd/mk-initrd ./image/initrd.img
+# Programs, flags, etc.
+ASM		= nasm
+DASM		= objdump
+CC		= gcc -m32
+LD		= ld -m elf_i386
+ASMBFLAGS	= -I boot/include/
+ASMKFLAGS	= -I include/ -I include/sys/ -f elf
+CFLAGS		= -I include/ -I include/sys/ -c -fno-builtin -Wall -m32 -fno-stack-protector
+#CFLAGS		= -I include/ -c -fno-builtin -fno-stack-protector -fpack-struct -Wall
+LDFLAGS		= -Ttext $(ENTRYPOINT) -Map krnl.map -melf_i386
+DASMFLAGS	= -D
 
-mk-initrd:
-	gcc -o ./initrd/mk-initrd ./initrd/mk-initrd.c
-	./initrd/mk-initrd ./initrd/file1.txt ./initrd/file1.txt ./initrd/file2.txt ./initrd/file2.txt
+# This Program
+ORANGESBOOT	= boot/boot.bin boot/loader.bin
+ORANGESKERNEL	= kernel.bin
+OBJS		= kernel/kernel.o lib/syscall.o kernel/start.o kernel/main.o\
+			kernel/clock.o kernel/keyboard.o kernel/tty.o kernel/console.o\
+			kernel/i8259.o kernel/global.o kernel/protect.o kernel/proc.o\
+			kernel/systask.o kernel/hd.o\
+			lib/printf.o lib/vsprintf.o\
+			lib/kliba.o lib/klib.o lib/string.o lib/ls.o lib/sl.o lib/misc.o lib/mkdir.o\
+			lib/open.o lib/read.o lib/write.o lib/close.o lib/unlink.o\
+			lib/getpid.o lib/syslog.o\
+			fs/main.o fs/open.o fs/misc.o fs/read_write.o\
+			fs/link.o\
+			fs/disklog.o
+DASMOUTPUT	= kernel.bin.asm
 
-prepare:
-	sudo losetup -d /dev/loop0
+# All Phony Targets
+.PHONY : everything final image clean realclean disasm all buildimg
 
-update:
-	sudo losetup /dev/loop0 ./image/CocOS.img
-	sudo mount /dev/loop0 /mnt
-	sudo cp ./src/kernel /mnt/kernel
-	sudo cp ./image/initrd.img /mnt/initrd
-	sudo umount /dev/loop0
-	sudo losetup -d /dev/loop0
+# Default starting position
+nop :
+	@echo "why not \`make image' huh? :)"
 
-run:
-	sudo losetup /dev/loop0 ./image/CocOS.img
-	sudo bochs -f ./configure/bochsrc
-	sudo losetup -d /dev/loop0
+everything : $(ORANGESBOOT) $(ORANGESKERNEL)
+
+all : realclean everything
+
+image : realclean everything clean buildimg
+
+clean :
+	rm -f $(OBJS)
+
+realclean :
+	rm -f $(OBJS) $(ORANGESBOOT) $(ORANGESKERNEL)
+
+disasm :
+	$(DASM) $(DASMFLAGS) $(ORANGESKERNEL) > $(DASMOUTPUT)
+
+# We assume that "a.img" exists in current folder
+buildimg :
+	dd if=boot/boot.bin of=a.img bs=512 count=1 conv=notrunc
+	sudo mount -o loop a.img /mnt/
+	sudo cp -fv boot/loader.bin /mnt/
+	sudo cp -fv kernel.bin /mnt/
+	sudo umount /mnt
+
+boot/boot.bin : boot/boot.asm boot/include/load.inc boot/include/fat12hdr.inc
+	$(ASM) $(ASMBFLAGS) -o $@ $<
+
+boot/loader.bin : boot/loader.asm boot/include/load.inc boot/include/fat12hdr.inc boot/include/pm.inc
+	$(ASM) $(ASMBFLAGS) -o $@ $<
+
+$(ORANGESKERNEL) : $(OBJS)
+	$(LD) $(LDFLAGS) -o $(ORANGESKERNEL) $(OBJS)
+
+kernel/kernel.o : kernel/kernel.asm
+	$(ASM) $(ASMKFLAGS) -o $@ $<
+
+lib/syscall.o : lib/syscall.asm
+	$(ASM) $(ASMKFLAGS) -o $@ $<
+
+kernel/start.o: kernel/start.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/main.o: kernel/main.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/clock.o: kernel/clock.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/keyboard.o: kernel/keyboard.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/tty.o: kernel/tty.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/console.o: kernel/console.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/i8259.o: kernel/i8259.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/global.o: kernel/global.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/protect.o: kernel/protect.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/proc.o: kernel/proc.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/printf.o: lib/printf.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/vsprintf.o: lib/vsprintf.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/systask.o: kernel/systask.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/hd.o: kernel/hd.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/klib.o: lib/klib.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/ls.o: lib/ls.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/sl.o: lib/sl.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/misc.o: lib/misc.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/kliba.o : lib/kliba.asm
+	$(ASM) $(ASMKFLAGS) -o $@ $<
+
+lib/string.o : lib/string.asm
+	$(ASM) $(ASMKFLAGS) -o $@ $<
+
+lib/open.o: lib/open.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/read.o: lib/read.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/write.o: lib/write.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/close.o: lib/close.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/unlink.o: lib/unlink.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/getpid.o: lib/getpid.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/syslog.o: lib/syslog.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+fs/main.o: fs/main.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+fs/open.o: fs/open.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+fs/read_write.o: fs/read_write.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+fs/link.o: fs/link.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+fs/disklog.o: fs/disklog.c
+	$(CC) $(CFLAGS) -o $@ $<
+
