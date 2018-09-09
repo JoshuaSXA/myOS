@@ -16,6 +16,7 @@
 #include "global.h"
 #include "proto.h"
 
+#include "calculator.h"
 #include "2048Game.h"
 
 /*======================================================================*
@@ -41,7 +42,7 @@ PUBLIC int kernel_main() {
             privilege = PRIVILEGE_TASK;
             rpl       = RPL_TASK;
             eflags    = 0x1202; /* IF=1, IOPL=1, bit 2 is always 1   1 0010 0000 0010(2)*/
-            prio      = 15;     //set the priority to 15
+            prio      = 20;     //set the priority to 15
         }
         else {
             /* user process */
@@ -49,7 +50,7 @@ PUBLIC int kernel_main() {
             privilege = PRIVILEGE_USER;
             rpl       = RPL_USER;
             eflags    = 0x202; /* IF=1, bit 2 is always 1              0010 0000 0010(2)*/
-            prio      = 5;     //set the priority to 5
+            prio      = 10;     //set the priority to 5
         }
 
         strcpy(p_proc->name, p_task->name); /* set prio name */
@@ -160,7 +161,7 @@ void shell(char *tty_name){
         clearArr(buf, 1024);
         clearArr(temp, 512);
 
-        printf("root@localhost%s:~$ ", current_dirr);
+        printf("root@user:~%s$ ", current_dirr);
         int r = read(fd_stdin, rdbuf, 512);
         if (strcmp(rdbuf, "") == 0)
             continue;
@@ -214,8 +215,8 @@ void shell(char *tty_name){
             ProcessManage();
         }
         else if(strcmp(rdbuf,"kill 4") == 0 ){
-//            proc_table[4].p_flags = 1;
-//            ProcessManage();
+            proc_table[4].p_flags = 1;
+            ProcessManage();
             printf("cant kill this process!");
         }
         else if(strcmp(rdbuf,"kill 5") == 0 ){
@@ -528,7 +529,9 @@ void shell(char *tty_name){
                 memcpy(current_dirr, arg1, 512);
                 //printf("Change dir %s success!\n", current_dirr);
             }
-        }else if( strcmp(cmd, "minesweeper") == 0){
+        }else if( strcmp(cmd, "calc") == 0){
+	    calculator(fd_stdin, fd_stdout);
+	}else if( strcmp(cmd, "minesweeper") == 0){
 	    game(fd_stdin);
         }else if( strcmp(cmd, "snake")  == 0){
             snakeGame();
@@ -741,6 +744,7 @@ void help() {
     printf("    minesweeper                   : start the minesweeper game               \n");
     printf("    snake                         : start the snake game                     \n");  
     printf("    2048                          : start the 2048 game                      \n");
+    printf("    cal                           : start the calculator                     \n");
     printf("    process                       : display all process-info and manage      \n");
     printf("    about                         : display the about of system              \n");
     printf("=============================================================================\n");
@@ -750,10 +754,10 @@ void ProcessManage()
 {
     int i;
     printf("=============================================================================\n");
-    printf("         myID      |    name       |      priority    |     running        \n");
+    printf("          myPID      |    name       |      priority    |     running        \n");
     printf("-----------------------------------------------------------------------------\n");
     for ( i = 0 ; i < NR_TASKS + NR_PROCS ; ++i ) {
-        printf("          %d             %s               %d                 %d\n",
+        printf("%13d%17s%18d%18d\n",
                proc_table[i].pid, proc_table[i].name, proc_table[i].priority, proc_table[i].run_state);
     }
     printf("=============================================================================\n");
@@ -784,11 +788,12 @@ void animation() {
 	printf(".....................yyy.............................\n");
 	printf("...................yyy...............................\n");
 	printf("...............yyyy...........Version 1.0.0..........\n");
-	printf(".............................CZH.&.SXA.&.CZH.........\n");
+	printf(".............................WJC.&.SXA.&.CZH.........\n");
 	printf(".....................................................\n");
 	printf("_____________________________________________________\n");
-    milli_delay(20000);
+    milli_delay(50000);	
     clear();
+    help();
 }
 
 
