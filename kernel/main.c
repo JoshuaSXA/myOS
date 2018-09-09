@@ -770,25 +770,23 @@ void ProcessManage()
  *======================================================================*/
 void animation() {
     clear();
-    printf("             OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
-    printf("             O**********************O**********************O\n");
-    printf("             O*********OOOO*********O*********OOOO*OO******O\n");
-    printf("             O*******OOOOOOOO*******O*******OOOOOOOOO******O\n");
-    printf("             O******OOOO**OOOO******O*******OOO**OOOO******O\n");
-    printf("             O*****OOOO****OOOO*****O******OOO****OOO******O\n");
-    printf("             O****OOOO******OOOO****O******OOOO****OO******O\n");
-    printf("             O****OOO*******OOOO****O*******OOOO***********O\n");
-    printf("             O****OOO*******OOOO****O*******OOOOOO*********O\n");
-    printf("             O****OOO********OOO****O********OOOOOOO*******O\n");
-    printf("             O****OOO********OOO****O*********OOOOOOO******O\n");
-    printf("             O****OOO*******OOOO****O***********OOOOO******O\n");
-    printf("             O****OOO*******OOOO****O******OO****OOOOO*****O\n");
-    printf("             O****OOOO******OOOO****O******OO*****OOOO*****O\n");
-    printf("             O*****OOOO****OOOO*****O******OOO****OOO******O\n");
-    printf("             O******OOOOOOOOOO******O******OOOOOOOOOO******O\n");
-    printf("             O*******OOOOOOOO*******O******OOOOOOOOO*******O\n");
-    printf("             O**********************O**********************O\n");
-    printf("             OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
+	printf("_____________________________________________________\n");
+	printf(".....................................................\n");
+	printf(".mm...mmmmmmmm..............oooooooooo..sssssssss....\n");
+	printf(".mm..mmmmmmmmmm.............oooooooooo..sssssssss....\n");
+	printf(".mm.mmm..mm..mmm.yyy.....yyyoo......oo..ss...........\n");
+	printf("..mmmm...mm...mmmyyy.....yyyoo......oo..ss...........\n");
+	printf("...mmm...mm...mmmyyy.....yyyoo......oo..sssssssss....\n");
+	printf("...mmm...mm...mmm.yyy....yyyoo......oo........sss....\n");
+	printf("...mmm...mm...mmm..yyy..yyy.oooooooooosssssssssss....\n");
+	printf("...mm....mm...mmm...yyyyyy..ooooooooossssssssssss....\n");
+	printf("......................yyy............................\n");
+	printf(".....................yyy.............................\n");
+	printf("...................yyy...............................\n");
+	printf("...............yyyy...........Version 1.0.0..........\n");
+	printf(".............................CZH.&.SXA.&.CZH.........\n");
+	printf(".....................................................\n");
+	printf("_____________________________________________________\n");
     milli_delay(20000);
     clear();
 }
