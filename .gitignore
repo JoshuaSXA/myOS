@@ -3,6 +3,8 @@
 # Prerequisites
 *.d
 
+*.img
+
 # Object files
 *.o
 *.ko
@@ -213,6 +215,8 @@ DocProject/Help/html
 
 # Click-Once directory
 publish/
+
+bochsrc
 
 # Publish Web Output
 *.[Pp]ublish.xml

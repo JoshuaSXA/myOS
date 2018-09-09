@@ -6,8 +6,8 @@
 megs: 32
 
 # filename of ROM images
-romimage: file=/home/parallels/Downloads/bochs-2.6.9/bios/BIOS-bochs-latest
-vgaromimage: file=/home/parallels/Downloads/bochs-2.6.9/bios/VGABIOS-lgpl-latest
+romimage: file=/home/kirito/Documents/bochs/bios/BIOS-bochs-latest
+vgaromimage: file=/home/kirito/Documents/bochs/bios/VGABIOS-lgpl-latest
 
 # what disk images will be used
 floppya: 1_44=a.img, status=inserted
@@ -31,4 +31,4 @@ boot: a
 mouse: enabled=0
 
 # enable key mapping, using US layout as default.
-keyboard: keymap=/home/parallels/Downloads/bochs-2.6.9/gui/keymaps/x11-pc-us.map
+keyboard: keymap=/home/kirito/Documents/bochs/gui/keymaps/x11-pc-us.map
