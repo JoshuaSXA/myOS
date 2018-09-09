@@ -104,7 +104,7 @@
 #define TASK_SYS	1
 #define TASK_HD		2
 #define TASK_FS		3
-/* #define TASK_MM	4 */
+#define TASK_MM		4 
 #define ANY		(NR_TASKS + NR_PROCS + 10)
 #define NO_TASK		(NR_TASKS + NR_PROCS + 20)
 
@@ -144,6 +144,9 @@ enum msgtype {
 
 	/* FS & TTY */
 	SUSPEND_PROC, RESUME_PROC,
+
+	/* FS & MM */
+	FORK, EXIT,
 
 	/* TTY, SYS, FS, MM, etc */
 	SYSCALL_RET,
