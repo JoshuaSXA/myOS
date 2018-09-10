@@ -136,6 +136,10 @@ PUBLIC void addTwoString(char *to_str,char *from_str1,char *from_str2){
     to_str[j]=0;
 }
 
+
+char users[3][128] = {"root", "admin","chen"};
+char passwords[3][128]= {"root","super","super"};
+
 void shell(char *tty_name){
     int fd;
     //int isLogin = 0;
@@ -152,6 +156,94 @@ void shell(char *tty_name){
     assert(fd_stdout == 1);
     animation();  // the start animation
     char current_dirr[512] = "/";
+    
+    while(1){
+        printf("please login first)\n");
+        clearArr(rdbuf, 512);
+        clearArr(cmd, 512);
+        clearArr(arg1, 512);
+        clearArr(arg2, 512);
+        clearArr(buf, 1024);
+        clearArr(temp, 512);
+
+        printf("username: ");
+        int r = read(fd_stdin, rdbuf, 512);
+        if (strcmp(rdbuf, "") == 0)
+            continue;
+        int i = 0;
+        int j = 0;
+        while(rdbuf[i] != ' ' && rdbuf[i] != 0){
+            cmd[i] = rdbuf[i];
+            i++;
+        }
+        i++;
+        while(rdbuf[i] != ' ' && rdbuf[i] != 0){
+            arg1[j] = rdbuf[i];
+            i++;
+            j++;
+        }
+        i++;
+        j = 0;
+        while(rdbuf[i] != ' ' && rdbuf[i] != 0){
+            arg2[j] = rdbuf[i];
+            i++;
+            j++;
+        }
+        // clear
+        rdbuf[r] = 0;
+        char old_cmd[512];
+        strcpy(old_cmd,cmd);
+        int cnt = 0,flag = 0;
+        for(cnt = 0; cnt < 3; cnt++){
+            if(strcmp(old_cmd, users[cnt])==0){
+                printf("password: ");
+                clearArr(rdbuf, 512);
+                clearArr(cmd, 512);
+                clearArr(arg1, 512);
+                clearArr(arg2, 512);
+                clearArr(buf, 1024);
+                clearArr(temp, 512);
+                int r = read(fd_stdin, rdbuf, 512);
+                if (strcmp(rdbuf, "") == 0)
+                    continue;
+                int i = 0;
+                int j = 0;
+                while(rdbuf[i] != ' ' && rdbuf[i] != 0){
+                    cmd[i] = rdbuf[i];
+                    i++;
+                }
+                i++;
+                while(rdbuf[i] != ' ' && rdbuf[i] != 0){
+                    arg1[j] = rdbuf[i];
+                    i++;
+                    j++;
+                }
+                i++;
+                j = 0;
+                while(rdbuf[i] != ' ' && rdbuf[i] != 0){
+                    arg2[j] = rdbuf[i];
+                    i++;
+                    j++;
+                }
+                // clear
+                rdbuf[r] = 0;
+                if (strcmp(cmd, passwords[cnt]) == 0){
+                    flag = 1;
+                }
+                else{
+                    printf("invalid password!\n");
+                }
+            }
+        }
+        if(flag == 0){
+            printf("no valid username!\n");
+        }
+        else{
+            printf("login sucessfully~\n");
+            break;
+        }
+    }
+
     while (1) {
         // clear the array ！
         clearArr(rdbuf, 512);
