@@ -5,7 +5,7 @@
 
 *bochsrc*
 
-*.img
+*.img*
 
 # Object files
 *.o
