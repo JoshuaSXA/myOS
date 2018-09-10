@@ -483,19 +483,20 @@ void shell(char *tty_name){
             /*create the file*/
             fd = open(arg2, O_CREAT | O_RDWR);
             if (fd == -1){
-                //file exist
+                //printl("file already exists\n");
             }
             else{
                 //file not exist or create file
-                char temp2[1024];
-                temp2[0] = 0;
-                write(fd, temp2, 1);
+                buf[tail] = 0;
+                write(fd, buf, tail+1);
                 close(fd);
             }
+            /*
             //set file to value
             fd = open(arg2, O_RDWR);
             write(fd, buf, tail+1);
             close(fd);
+            */
         }
         else if (strcmp(cmd, "mv") == 0){
              if(arg1[0]!='/'){
@@ -524,15 +525,11 @@ void shell(char *tty_name){
             }
             else{
                 //file not exist or create file
-                char temp2[1024];
-                temp2[0] = 0;
-                write(fd, temp2, 1);
+                buf[tail]=0;
+                write(fd, buf, tail+1);
                 close(fd);
             }
-            // set file to value
-            fd = open(arg2, O_RDWR);
-            write(fd, buf, tail+1);
-            close(fd);
+            
             // delete the file
             unlink(arg1);
         }   
