@@ -18,6 +18,7 @@
 
 #include "calculator.h"
 #include "2048Game.h"
+#include "finger_guessing.h"
 
 /*======================================================================*
                             kernel_main
@@ -634,8 +635,9 @@ void shell(char *tty_name){
             snakeGame();
         }else if( strcmp(cmd, "2048") == 0){
 	    start2048Game(fd_stdin, fd_stdout);
-	}
-        else
+	}else if( strcmp(cmd, "guess") == 0){
+	    fingerGuessingGame(fd_stdin, fd_stdout);
+	}else
             printf("Command not found, please check!\n");
     }
 }
@@ -852,6 +854,7 @@ void help() {
     printf("    snake                         : start the snake game                     \n");  
     printf("    2048                          : start the 2048 game                      \n");
     printf("    cal                           : start the calculator                     \n");
+    printf("    guess                         : start the finger-guessing game           \n");
     printf("    process                       : display all process-info and manage      \n");
     printf("    about                         : display the about of system              \n");
     printf("=============================================================================\n");
