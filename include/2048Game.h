@@ -1,7 +1,7 @@
 /********************************************
  * @file   2048.h
  * @brief  2048 game
- * @author Jianfeng HOU
+ * @author Shen Xiaoang
  *******************************************/
 
 #include "stdio.h"

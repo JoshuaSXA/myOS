@@ -1,8 +1,7 @@
 /********************************************
  * @file   rand.h
- * @brief  Simple implementation of rand(reference: 
- *     https://stackoverflow.com/questions/4768180/rand-implementation/)
- * @author Jianfeng HOU
+ * @brief  Simple implementation of rand
+ * @author Shen Xiaoang
  *******************************************/
 
 #ifndef _RAND_H_
