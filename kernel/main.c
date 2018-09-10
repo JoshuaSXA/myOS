@@ -537,17 +537,22 @@ void shell(char *tty_name){
         }   
         else if (strcmp(cmd, "encrypt") == 0)
         {
-            fd = open(arg1, O_RDWR);
-            if (fd == -1)
-            {
-                printf("File not exists! Please check the filename!\n");
-                continue ;
-            }
-            if (!verifyFilePass(arg1, fd_stdin))
-            {
-                printf("Authorization failed\n");
+
+            if(arg1[0]==0){
+                printf("Failed to open file! Please input the filename!\n");
                 continue;
             }
+            if(arg1[0]!='/'){
+                addTwoString(temp,current_dirr,arg1);
+                memcpy(arg1,temp,512);                
+            }
+
+            fd = open(arg1, O_RDWR);
+            if (fd == -1){
+                printf("Please check the filename!\n");
+                continue ;
+            }
+            printl("%s\n",arg1);
             doEncrypt(arg1, fd_stdin);
         }
         else if (strcmp(cmd, "test") == 0)
@@ -744,7 +749,9 @@ int verifyFilePass(char *path, int fd_stdin) {
 
     struct dir_entry *pde = find_entry(path);
 
-    /*printl(pde->pass);*/
+    //printl("in the verifyfile pass function\n");
+    //printl(pde->pass);
+    //printl("pde->pass is %s\n",pde->pass);
 
     if (strcmp(pde->pass, "") == 0)
         return 1;
@@ -768,21 +775,27 @@ void doEncrypt(char *path, int fd_stdin) {
     read(fd_stdin, pass, 128);
 
     if (strcmp(pass, "") == 0) {
-        /*printl("A blank password!\n");*/
+        printl("A blank password!\n");
         strcpy(pass, "");
     }
+    
+
     //encrypt the file
     int i, j;
-
+    //printl("%s \n",path);
     char filename[MAX_PATH];
     memset(filename, 0, MAX_FILENAME_LEN);
     struct inode * dir_inode;
 
-    if (strip_path(filename, path, &dir_inode) != 0)
+    if (strip_path(filename, path, &dir_inode) != 0){
         return 0;
-
-    if (filename[0] == 0)   /* path: "/" */
+    }
+    //printl("%d\n",dir_inode->i_num);
+    //printl("%s\n",filename);
+    if (filename[0] == 0)   /* path: "/" */{
         return dir_inode->i_num;
+    }
+    
     /**
      * Search the dir for the file.
      */
@@ -802,16 +815,18 @@ void doEncrypt(char *path, int fd_stdin) {
                 // delete the file
                 strcpy(pde->pass, pass);
                 WR_SECT(dir_inode->i_dev, dir_blk0_nr + i);
+                printl("your input password is %s\n",pde->pass);
                 return;
                 /*return pde->inode_nr;*/
             }
             if (++m > nr_dir_entries)
                 break;
         }
+        //printl("---\n");
         if (m > nr_dir_entries) /* all entries have been iterated */
             break;
     }
-
+    
 }
 
 
